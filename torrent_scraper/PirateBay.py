@@ -31,10 +31,7 @@ class PirateBayTorrent(Torrent):
             link['href'],
             *[obj.text for obj in tr.find_all('td', align='right')]
         )
-
-    def __repr__(self):
-        return f'PirateBayTorrent({self._name}, {self._size}, {self._link}, {self._se}, {self._le})'
-
+        
     @property
     def magnet(self):
         page = BeautifulSoup(requests.get(self._link).text, 'lxml')

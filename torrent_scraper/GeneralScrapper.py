@@ -36,3 +36,6 @@ class Torrent:
         The property will fetch the magnet link from the torrent page of the websites
         """
         raise NotImplementedError
+
+    def __repr__(self):
+        return f'Torrent({self._name}, {self._size}, {self._link}, {self._se}, {self._le}, {self._source})'
