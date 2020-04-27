@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
-from GeneralScrapper import TorrentScrapper, Torrent
+from scrappers.GeneralScrapper import TorrentScrapper, Torrent
 
 
 class X1337(TorrentScrapper):
@@ -35,8 +35,8 @@ class X1337Torrent(Torrent):
             link.text,
             cols[4].text[:cols[4].text.index(' ') + 3].replace('MB', 'Mb').replace('GB', 'Gb'),
             source[:-1] + link['href'],
-            cols[1].text,
-            cols[2].text
+            int(cols[1].text),
+            int(cols[2].text)
         )
 
     @property

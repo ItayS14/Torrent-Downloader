@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
-from GeneralScrapper import TorrentScrapper, Torrent
+from scrappers.GeneralScrapper import TorrentScrapper, Torrent
 
 
 class PirateBay(TorrentScrapper):
@@ -17,7 +17,6 @@ class PirateBay(TorrentScrapper):
         
         return (PirateBayTorrent.from_tr(tr) for tr in table.find_all('tr')[1:-1])
 
-
 class PirateBayTorrent(Torrent):
     def __init__(self, name, size, link, se, le):
         super().__init__(name, size, link, se, le, 'PirateBay')
@@ -29,7 +28,7 @@ class PirateBayTorrent(Torrent):
             link.text,
             tr.find('font').text.split(',')[1].replace(' Size ', '').replace('GiB', 'Gb').replace('MiB', 'Mb'),
             link['href'],
-            *[obj.text for obj in tr.find_all('td', align='right')]
+            *[int(obj.text) for obj in tr.find_all('td', align='right')]
         )
         
     @property

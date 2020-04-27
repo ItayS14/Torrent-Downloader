@@ -18,7 +18,9 @@ class TorrentScrapper:
         :return: list of Torrent for every link 
         """
         raise NotImplementedError
-
+    
+    def __repr__(self):
+        return f'TorrentScrapper({self._source})'
 
 # Class that represnt torrent page
 class Torrent:
@@ -34,8 +36,24 @@ class Torrent:
     def magnet(self):
         """
         The property will fetch the magnet link from the torrent page of the websites
+        :return: a magnet link for the torrent (str)
         """
         raise NotImplementedError
+
+    @property
+    def to_list(self):
+        """
+        Returns tupple with inforamtion about the Torrent to display in the GUI
+        """
+        return (self._name, self._size, self._se, self._le)
+
+    @property 
+    def seeders(self):
+        return self._se
+
+    @property
+    def info(self):
+        return self._link
 
     def __repr__(self):
         return f'Torrent({self._name}, {self._size}, {self._link}, {self._se}, {self._le}, {self._source})'
