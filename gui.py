@@ -1,99 +1,102 @@
 import tkinter
-from tkinter import ttk
+from tkinter import ttk, messagebox
 import os
 from scrappers import providers
 from scrappers.GeneralScrapper import TorrentScrapper
 
 
-def popup_msg(msg):
-    """
-    The function will display popup msg
-    :param msg: the text to display in the msg
-    """
-    popup = tkinter.Tk()
-    popup.geometry('200x70')
-    popup.wm_title("Error")
-    label = tkinter.Label(popup, text=msg)
-    label.pack(side='top', fill='x', pady=10)
-    button = tkinter.Button(popup, text='Ok', command=lambda : popup.destroy(), width=5, height=1)
-    button.pack()
-    popup.mainloop()
+# The class represnt the main windows of the app
+class Application(tkinter.Frame):
+    def __init__(self, master):
+        super().__init__(master)
+        master.title('Torrent Downloader')
+        master.wm_iconbitmap('icon.ico')
+        master.geometry('760x450')
+    
+        img = tkinter.PhotoImage(file= 'title.gif')
+        img_lbl = tkinter.Label(master, image=img)
+        img_lbl.image = img
+        img_lbl.pack()            
 
-def search_for_torrents(torrent_name):
-    """
-    The function will search for torrents and update the gui base on that
-    :param torrent_name: the torrent to search
-    """   
-    # Running over results from all sources
-    torrents = []
-    try: 
-        for provider in providers:
-            torrents += provider.get_links(torrent_name)
-    except TorrentScrapper.NoResultsFound: # TODO: Change it later to only when execption was thrown in all the providers
-        popup_msg('Sorry, no results were found!') 
+        entry_lbl = tkinter.Label(master, text='Enter name to search:')
+        entry_lbl.place(x=10, y=95)
+        
+        self._entry = tkinter.Entry(master)
+        self._entry.place(x=14, y=120, width=200)
+       
+        # Search button that searches for torrents using the providers
+        search_btn = tkinter.Button(master, text='Search', command=lambda:self.search_torrents(self._entry.get()), height=2, width=10)
+        search_btn.place(x=230, y=100)
+        
+        treeview_label = tkinter.Label(master, text='Results:')
+        treeview_label.place(x=10, y=140)
+       
+        # Packing the torrent list treeview
+        self._treeview = ttk.Treeview(master, columns=('Name', 'Size', 'Seeders', 'Leechers'), selectmode='browse')
+        self._treeview.bind("<Double-1>", self.on_double_click) #oppening the link in defult browser when double click on the row in the treeview
+        self._treeview.column('Name', width=500)
+        self._treeview.column('Size', width=70)
+        self._treeview.column('Seeders', width=70)
+        self._treeview.column('Leechers', width=70)
+        self._treeview.heading('Name', text='Name')
+        self._treeview.heading('Size', text='Size')
+        self._treeview.heading('Seeders', text='Seeders')
+        self._treeview.heading('Leechers', text='Leechers')
+        self._treeview['show'] = 'headings'
+        self._treeview.place(x=13, y=165)
+        
+        # The download button, with lambda that downloads the select torrent from the treeview
+        download_btn = tkinter.Button(master, text='Download', command= self.download_torrent, height=2, width=10)
+        download_btn.place(x=13, y=400)
 
-    global results
-    global treeview
-    treeview.delete(*treeview.get_children())
-    results = sorted(torrents, key= lambda x: x.seeders, reverse=True)
-    for torrent in results:
-        treeview.insert('', 'end', values=torrent.to_list)
+        # List that holds the current search result list
+        self._torrents = []
+
+    def search_torrents(self, torrent_name):
+        """
+        The function will search for torrents and update the gui base on that
+        :param torrent_name: the torrent to search
+        """   
+        if not torrent_name:
+            return
+            
+        # Running over results from all sources
+        self._torrents = []
+        try: 
+            for provider in providers:
+                self._torrents += provider.get_links(torrent_name)
+        except TorrentScrapper.NoResultsFound: # TODO: Change it later to only when execption was thrown in all the providers
+            messagebox.showerror('Error','Sorry, no results were found!') 
+
+        self._treeview.delete(*self._treeview.get_children())
+        self._torrents = sorted(self._torrents, key= lambda x: x.seeders, reverse=True)
+        for torrent in self._torrents:
+            self._treeview.insert('', 'end', values=torrent.to_list)
+    
+
+    def on_double_click(self, _):
+        """
+        The function will open the webpage of the selected torrent in case of double clicking
+        """
+        item = self._treeview.selection()
+        if item:
+            index = self._treeview.index(item)
+            os.system(f'start {self._torrents[index].info}')
+
+    def download_torrent(self):
+        """
+        The function will download the selected torrent
+        """
+        item = self._treeview.selection()
+        if item:
+            index = self._treeview.index(item[0])
+            os.startfile(self._torrents[index].magnet)
 
 
-def on_double_click(event):
-    """
-    the function will handle double clicking
-    :param event: this is not being used thats only because it have to be given
-    """
-    item = treeview.selection()
-    if item:
-        index = treeview.index(item)
-        global results
-        os.system(f'start {results[index].info}')
-
-
-def download_torrent(item):
-    """
-    The function will download torrent
-    :param items: the items chosen on the treeview
-    """
-    if item:
-        index = treeview.index(item[0])
-        global results
-        os.startfile(results[index].magnet)
-    else:
-        popup_msg('No item was chosen')
+def main():
+    root = tkinter.Tk()
+    Application(root).pack()
+    root.mainloop() 
 
 if __name__ == '__main__':
-    window = tkinter.Tk()
-    window.title('Torrent Downloader')
-    window.wm_iconbitmap('icon.ico')
-    window.geometry("760x450")
-    img = tkinter.PhotoImage(file = 'title.gif')
-    img_lbl = tkinter.Label(window, image=img)
-    img_lbl.image = img
-    img_lbl.pack()
-    results =  []
-    entry_lbl = tkinter.Label(window, text='Enter name to search:')
-    entry = tkinter.Entry(window)
-    search_btn = tkinter.Button(window, text='Search', command=lambda:search_for_torrents(entry.get()), height=2, width=10)
-    treeview_label = tkinter.Label(window, text='Results:')
-    treeview = ttk.Treeview(window, columns=('Name', 'Size', 'Seeders', 'Leechers'), selectmode='browse')
-    treeview.bind("<Double-1>", on_double_click) #oppening the link in defult browser when double click on the row in the treeview
-    treeview.column('Name', width=500)
-    treeview.column('Size', width=70)
-    treeview.column('Seeders', width=70)
-    treeview.column('Leechers', width=70)
-    treeview.heading('Name', text='Name')
-    treeview.heading('Size', text='Size')
-    treeview.heading('Seeders', text='Seeders')
-    treeview.heading('Leechers', text='Leechers')
-    treeview['show'] = 'headings'
-    download_btn = tkinter.Button(window, text='Download', command=lambda :download_torrent(treeview.selection()), height=2, width=10)
-    download_btn.place(x=13, y=400)
-    search_btn.place(x=230, y=100)
-    entry.place(x=14, y=120, width=200)
-    entry_lbl.place(x=10, y=95)
-    treeview_label.place(x=10, y=140)
-    treeview.place(x=13, y=165)
-    window.mainloop()
+    main()

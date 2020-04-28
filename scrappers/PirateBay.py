@@ -15,7 +15,7 @@ class PirateBay(TorrentScrapper):
         if not table:
             raise TorrentScrapper.NoResultsFound
         
-        return (PirateBayTorrent.from_tr(tr) for tr in table.find_all('tr')[1:-1])
+        return [PirateBayTorrent.from_tr(tr) for tr in table.find_all('tr')[1:-1]]
 
 class PirateBayTorrent(Torrent):
     def __init__(self, name, size, link, se, le):
