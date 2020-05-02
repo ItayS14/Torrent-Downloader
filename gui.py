@@ -10,10 +10,10 @@ class Application(tkinter.Frame):
     def __init__(self, master):
         super().__init__(master)
         master.title('Torrent Downloader')
-        master.wm_iconbitmap('icon.ico')
+        master.wm_iconbitmap('Data/icon.ico')
         master.geometry('760x450')
     
-        img = tkinter.PhotoImage(file= 'title.gif')
+        img = tkinter.PhotoImage(file= 'Data/title.gif')
         img_lbl = tkinter.Label(master, image=img)
         img_lbl.image = img
         img_lbl.pack()            
