@@ -2,9 +2,7 @@
 
 Python program that scrapes the internet for magnet links for a torrent
 
-
-
-![Screenshot](Data/screenshot.jpg)
+![Screenshot](Data/screenshot.JPG)
 
 
 
